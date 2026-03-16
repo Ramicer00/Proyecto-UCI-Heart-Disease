@@ -85,7 +85,6 @@ The following machine learning models were trained and evaluated:
 
 * Logistic Regression
 * Random Forest
-* Support Vector Machine
 * Gradient Boosting
 
 ## Evaluation Metrics
@@ -100,13 +99,13 @@ Model performance was evaluated using:
 
 ## Results
 
-| Model               | Accuracy | ROC-AUC |
-| ------------------- | -------- | ------- |
-| Logistic Regression |    XX    |    XX   |
-| Random Forest       |    XX    |    XX   |
-| SVM                 |    XX    |    XX   |
+| Model               | Accuracy | Precision | Recall | F1-score | ROC-AUC |
+| ------------------- | -------- | --------- | ------ | -------- | ------- |
+| Logistic Regression |    XX    |    XX     |   XX   |    XX    |   XX    |
+| Random Forest       |    XX    |    XX     |   XX   |    XX    |   XX    |
+| XGBoost             |    XX    |    XX     |   XX   |    XX    |   XX    |
 
-Random Forest achieved the best overall performance.
+
 
 ## Model Interpretation
 
