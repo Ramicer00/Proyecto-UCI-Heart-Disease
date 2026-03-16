@@ -102,9 +102,9 @@ Model performance was evaluated using:
 
 | Model               | Accuracy | ROC-AUC |
 | ------------------- | -------- | ------- |
-| Logistic Regression | XX       | XX      |
-| Random Forest       | XX       | XX      |
-| SVM                 | XX       | XX      |
+| Logistic Regression |    XX    |    XX   |
+| Random Forest       |    XX    |    XX   |
+| SVM                 |    XX    |    XX   |
 
 Random Forest achieved the best overall performance.
 
@@ -147,5 +147,5 @@ Run the notebooks to reproduce the analysis.
 ## Author
 
 Ramiro Cervetto
-Biomedical Engineering Student
+Biomedical Engineering
 Machine Learning for Healthcare
