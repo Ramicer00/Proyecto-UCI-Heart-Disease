@@ -8,8 +8,8 @@ from sklearn.metrics import classification_report, roc_auc_score
 import xgboost as xgb
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
-DATA_PATH = "../dataset/heart_processed.csv"
-MODELS_DIR = "../models"
+DATA_PATH = "./dataset/heart_processed.csv"
+MODELS_DIR = "./models"
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     save_model(xgb_model, "xgb_model.pkl")
 
     # Guardar test set para evaluación reproducible
-    X_test.to_csv("../dataset/X_test.csv", index=False)
-    y_test.to_csv("../dataset/y_test.csv", index=False)
+    X_test.to_csv("./dataset/X_test.csv", index=False)
+    y_test.to_csv("./dataset/y_test.csv", index=False)
 
     print("Modelos guardados correctamente en models/")
     print("Test set guardado en dataset/")

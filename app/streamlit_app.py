@@ -14,8 +14,8 @@ from sklearn.metrics import (
 )
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
-MODELS_DIR = "../models"
-DATA_DIR = "../data"
+MODELS_DIR = "./models"
+DATA_DIR = "./dataset"
 
 # ── CARGA DE RECURSOS ─────────────────────────────────────────────────────────
 @st.cache_resource

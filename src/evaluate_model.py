@@ -8,8 +8,8 @@ from sklearn.metrics import (
 )
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
-DATA_DIR = "../dataset"
-MODELS_DIR = "../models"
+DATA_DIR = "./dataset"
+MODELS_DIR = "./models"
 
 
 # ── FUNCIONES ─────────────────────────────────────────────────────────────────

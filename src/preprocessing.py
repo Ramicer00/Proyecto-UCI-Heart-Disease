@@ -61,7 +61,7 @@ def scale_numerics(df, scaler=None, save_path=None):
     return df, scaler
 
 
-def preprocess_data(df, scaler=None, scaler_path="../models/scaler.pkl"):
+def preprocess_data(df, scaler=None, scaler_path="./models/scaler.pkl"):
     """
     Función principal que ejecuta todo el pipeline de preprocessing.
     - scaler=None → entrena y guarda el scaler (usado en train_model.py)
@@ -77,8 +77,8 @@ def preprocess_data(df, scaler=None, scaler_path="../models/scaler.pkl"):
 
 # ── EJECUCIÓN DIRECTA ─────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    df = pd.read_csv("../data/heart.csv")
+    df = pd.read_csv("./dataset/heart.csv")
     df_processed, scaler = preprocess_data(df)
-    df_processed.to_csv("../data/heart_processed.csv", index=False)
+    df_processed.to_csv("./dataset/heart_processed.csv", index=False)
     print(f"Dataset procesado: {df_processed.shape[0]} filas × {df_processed.shape[1]} columnas")
-    print(f"Scaler guardado en ../models/scaler.pkl")
+    print(f"Scaler guardado en ./models/scaler.pkl")
