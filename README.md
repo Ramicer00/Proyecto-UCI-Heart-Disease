@@ -71,13 +71,126 @@ Key observations:
 * Age, chest pain type and maximum heart rate show predictive power
 * The dataset shows mild class imbalance
 
-## Feature Engineering
+## Preprocessing Decisions
 
-The preprocessing pipeline includes:
+### 1. Medically Impossible Zeros
+Zeros were identified in variables where they are physiologically impossible.
+These values were converted to NaN for subsequent imputation.
 
-* Handling missing values
-* Feature scaling
-* Encoding categorical variables
+| Variable | Zeros detected | % | Justification |
+|---|---|---|---|
+| `chol` | 202 | 22% | Cholesterol cannot be 0 mg/dl |
+| `trestbps` | 60 | 6.5% | Blood pressure cannot be 0 mmHg |
+
+### 2. Null Imputation
+All continuous numeric variables were analyzed for physiologically impossible
+values. `age` and `thalach` were verified with no zeros found, requiring no action.
+
+#### `chol` and `trestbps` → mean imputation
+Both variables are continuous and approximately symmetric according to the EDA
+histograms, making the mean a reasonable estimate for missing values.
+
+Although `chol` showed a weak correlation with `target` (−0.23), the column was
+kept since cholesterol is a clinically established cardiovascular risk factor.
+The low correlation is explained by the heterogeneity of the 4 data sources and
+the high proportion of incorrectly recorded values.
+
+#### Remaining variables → mode imputation
+
+| Variable | Nulls | % | Type |
+|---|---|---|---|
+| `restecg` | 2 | 0.2% | Categorical |
+| `thalach` | 55 | 6.0% | Numerical |
+| `exang` | 55 | 6.0% | Categorical |
+| `fbs` | 90 | 9.8% | Categorical |
+| `oldpeak` | 62 | 6.7% | Numerical |
+| `slope` | 309 | 33.6% | Categorical |
+| `thal` | 486 | 52.8% | Categorical |
+| `ca` | 611 | 66.4% | Categorical |
+
+Mode imputation was chosen for all variables for the following reasons:
+- Most affected variables are categorical, where mode is the most appropriate
+measure of central tendency
+- For numerical variables (`thalach`, `oldpeak`), mode reduces introduced bias
+compared to mean when nulls exceed 6%
+
+Alternative strategies were considered for `ca`, `thal` and `slope` given their
+high percentage of nulls:
+- **Drop columns**: discarded because `ca` (0.46) and `thal` (0.50) have the
+highest correlation with `target`
+- **KNN Imputer**: discarded because with 66% nulls in `ca`, many neighbors also
+lack the registered value, limiting its effectiveness
+- **Indicator variables**: discarded because it may introduce dataset biases
+(which hospitals performed which studies) rather than real clinical patterns
+
+It is acknowledged that mode imputation on variables with high null percentages
+introduces bias, a limitation that should be considered when interpreting
+model results.
+
+### 3. Outlier Treatment
+
+Extreme values were analyzed across all continuous numeric variables:
+
+| Variable | Min | Max | Outliers? | Action |
+|---|---|---|---|---|
+| `age` | 28 | 77 | ❌ | No action |
+| `trestbps` | 80 | 200 | ❌ | No action |
+| `chol` | 85 | 603 | ⚠️ | No action (clinically possible) |
+| `thalach` | 60 | 202 | ❌ | No action |
+| `oldpeak` | -2.6 | 6.2 | ✅ | Fix negative values |
+
+#### `chol` → no action
+The maximum value of 603 mg/dl is extreme but clinically possible
+(severe hypercholesterolemia). It is not considered a recording error.
+
+#### `oldpeak` → clipping to 0
+12 records (1.3%) with negative `oldpeak` values were detected.
+Physiologically, `oldpeak` represents ST segment depression induced by exercise,
+whose minimum possible value is 0 (absence of depression).
+Negative values are recording errors and were replaced with 0 via clipping.
+
+### 4. Categorical Variable Encoding
+
+**One-Hot Encoding** (`pd.get_dummies`) was applied to nominal categorical
+variables. Label Encoding was discarded because it would imply a hierarchical
+order between categories that does not exist (e.g. chest pain types).
+
+| Variable | Categories | Reason |
+|---|---|---|
+| `cp` | 4 | Chest pain type, no hierarchical order |
+| `restecg` | 3 | Resting ECG result, no hierarchical order |
+| `slope` | 3 | ST segment slope, no hierarchical order |
+| `ca` | 4 | Number of colored vessels, no hierarchical order |
+| `thal` | 3 | Thalassemia type, no hierarchical order |
+
+`drop_first=True` was used to remove the first dummy category of each variable,
+avoiding multicollinearity, which is especially important for Logistic Regression.
+
+Variables `sex`, `fbs` and `exang` were not encoded as they are already binary.
+
+### 5. Numeric Variable Scaling
+
+**StandardScaler** was applied to continuous numeric variables, transforming
+each variable to have mean 0 and standard deviation 1.
+
+| Variable | Scale? | Reason |
+|---|---|---|
+| `age` | ✅ | Continuous, different scale from others |
+| `trestbps` | ✅ | Continuous, values between 80 and 200 |
+| `chol` | ✅ | Continuous, values between 85 and 603 |
+| `thalach` | ✅ | Continuous, values between 60 and 202 |
+| `oldpeak` | ✅ | Continuous, values between 0 and 6.2 |
+| `sex`, `fbs`, `exang` | ❌ | Already binary (0 and 1) |
+| One-Hot dummies | ❌ | Already binary (0 and 1) |
+| `target` | ❌ | Target variable |
+
+Random Forest and XGBoost are not sensitive to scale, but Logistic Regression
+requires it. Since all 3 models share the same processed dataset, StandardScaler
+is applied to all continuous numeric variables.
+
+The scaler is saved to `models/scaler.pkl` for reuse in production without
+retraining, ensuring new data is transformed with the same parameters as the
+training data.
 
 ## Models Implemented
 
