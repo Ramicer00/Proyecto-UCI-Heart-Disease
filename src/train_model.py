@@ -4,7 +4,6 @@ import os
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, roc_auc_score
 import xgboost as xgb
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
