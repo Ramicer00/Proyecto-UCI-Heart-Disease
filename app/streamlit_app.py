@@ -138,6 +138,7 @@ def page_evaluation(models, X_test, y_test):
             ax.set_ylabel("Actual")
         plt.tight_layout()
         st.pyplot(fig)
+
 # ── RESULTS SUMMARY ────────────────────────────────────────────────────────
         st.write("")
         st.markdown("### Results Summary")
@@ -194,7 +195,7 @@ def page_evaluation(models, X_test, y_test):
 
     with tab3:
         st.markdown("<h2 style='text-align: center;'>Feature Importance</h2>", unsafe_allow_html=True)
-        fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+        fig, axs = plt.subplots(2, 1, figsize=(14, 16))
         for ax, name in zip(axs, ["Random Forest", "XGBoost"]):
             model = models[name]
             importance = pd.Series(
@@ -204,8 +205,8 @@ def page_evaluation(models, X_test, y_test):
             sns.barplot(x=importance.values, y=importance.index, ax=ax, palette="Blues_r")
             ax.set_title(name)
             ax.set_xlabel("Importance")
-        plt.tight_layout()
-        st.pyplot(fig)
+        plt.tight_layout(h_pad=4.0)
+        st.pyplot(fig, use_container_width=True)
 
 
 # ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
