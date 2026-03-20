@@ -4,13 +4,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 from sklearn.metrics import (
     roc_auc_score, roc_curve,
-    confusion_matrix, classification_report
+    confusion_matrix
 )
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
@@ -61,38 +60,40 @@ def preprocess_input(input_dict, X_test_columns):
 
 # ── PÁGINAS ───────────────────────────────────────────────────────────────────
 def page_prediction(models, X_test):
-    st.title("🫀 Heart Disease Prediction")
-    st.markdown("Fill in the patient data to predict the presence of heart disease.")
+    st.markdown("<h1 style='text-align: center;'>Heart Disease Prediction</h1>", unsafe_allow_html=True)
+    st.write("")
+    st.markdown("Fill in the patient data to predict the presence of heart disease")
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        age      = st.slider("Age", 20, 80, 50)
+        age      = st.number_input("Age", min_value=20, max_value=80, value=50)
         sex      = st.selectbox("Sex", [0, 1], format_func=lambda x: "Female" if x == 0 else "Male")
         cp       = st.selectbox("Chest Pain Type (cp)", [0, 1, 2, 3])
-        trestbps = st.slider("Resting Blood Pressure (trestbps)", 80, 200, 130)
-        chol     = st.slider("Cholesterol (chol)", 85, 610, 246)
+        trestbps = st.number_input("Resting Blood Pressure (trestbps)", min_value=80, max_value=200, value=130)
+        chol     = st.number_input("Cholesterol (chol)", min_value=85, max_value=610, value=246)
 
     with col2:
         fbs     = st.selectbox("Fasting Blood Sugar > 120 mg/dl (fbs)", [0, 1])
         restecg = st.selectbox("Resting ECG (restecg)", [0, 1, 2])
-        thalach = st.slider("Max Heart Rate (thalach)", 60, 210, 140)
+        thalach = st.number_input("Max Heart Rate (thalach)", min_value=60, max_value=210, value=140)
         exang   = st.selectbox("Exercise Induced Angina (exang)", [0, 1])
-        oldpeak = st.slider("ST Depression (oldpeak)", 0.0, 6.2, 0.0, step=0.1)
 
     with col3:
         slope = st.selectbox("Slope of ST Segment (slope)", [0, 1, 2])
         ca    = st.selectbox("Major Vessels (ca)", [0, 1, 2, 3])
         thal  = st.selectbox("Thalassemia (thal)", [0, 1, 2, 3])
+        oldpeak = st.number_input("ST Depression (oldpeak)", min_value=0.0, max_value=6.2, value=0.0, step=0.1)
 
+    st.divider()
     model_name = st.selectbox("Select Model", list(models.keys()))
 
     if st.button("Predict"):
         input_dict = {
-            "age": age, "sex": sex, "cp": cp, "trestbps": trestbps,
-            "chol": chol, "fbs": fbs, "restecg": restecg, "thalach": thalach,
-            "exang": exang, "oldpeak": oldpeak, "slope": slope,
-            "ca": ca, "thal": thal
+        "age": age, "sex": sex, "cp": cp, "trestbps": trestbps,
+        "chol": chol, "fbs": fbs, "restecg": restecg, "thalach": thalach,
+        "exang": exang, "oldpeak": oldpeak, "slope": slope,
+        "ca": ca, "thal": thal
         }
 
         input_processed = preprocess_input(input_dict, X_test.columns)
@@ -117,12 +118,12 @@ def page_prediction(models, X_test):
 
 
 def page_evaluation(models, X_test, y_test):
-    st.title("📊 Model Evaluation")
+    st.markdown("<h1 style='text-align: center;'>Model Evaluation</h1>", unsafe_allow_html=True)
 
     tab1, tab2, tab3 = st.tabs(["Confusion Matrix", "ROC Curve", "Feature Importance"])
 
     with tab1:
-        st.subheader("Confusion Matrix")
+        st.markdown("<h2 style='text-align: center;'>Confusion Matrix</h2>", unsafe_allow_html=True)
         fig, axs = plt.subplots(1, 3, figsize=(18, 5))
         for ax, (name, model) in zip(axs, models.items()):
             y_pred = model.predict(X_test)
@@ -137,9 +138,46 @@ def page_evaluation(models, X_test, y_test):
             ax.set_ylabel("Actual")
         plt.tight_layout()
         st.pyplot(fig)
+# ── RESULTS SUMMARY ────────────────────────────────────────────────────────
+        st.write("")
+        st.markdown("### Results Summary")
+
+        col1, col2, col3 = st.columns(3)
+
+        for col, (name, model) in zip([col1, col2, col3], models.items()):
+            y_pred = model.predict(X_test)
+            cm = confusion_matrix(y_test, y_pred)
+            tn, fp, fn, tp = cm.ravel()
+
+            with col:
+                st.markdown(f"**{name}**")
+                st.markdown(f"✅ **{tn}** healthy patients correctly identified")
+                st.markdown(f"✅ **{tp}** sick patients correctly identified")
+                st.markdown(f"⚠️ **{fp}** healthy patients incorrectly flagged as sick")
+                st.markdown(f"🔴 **{fn}** sick patients missed (false negatives)")
+        st.write("")
+        st.markdown("### Model Metrics")
+
+        metrics_rows = []
+        for name, model in models.items():
+            y_pred = model.predict(X_test)
+            y_proba = model.predict_proba(X_test)[:, 1]
+            tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+            metrics_rows.append({
+                "Model":             name,
+                "Accuracy":          f"{(tn + tp) / (tn + fp + fn + tp) * 100:.1f}%",
+                "Recall":  f"{tp / (tp + fn) * 100:.1f}%",
+                "Precision": f"{tp / (tp + fp) * 100:.1f}%",
+                "F1":      f"{2 * tp / (2 * tp + fp + fn) * 100:.1f}%",
+            })
+
+        st.dataframe(
+            pd.DataFrame(metrics_rows).set_index("Model"),
+            use_container_width=True
+        )
 
     with tab2:
-        st.subheader("ROC Curve")
+        st.markdown("<h2 style='text-align: center;'>ROC Curve</h2>", unsafe_allow_html=True)
         fig, ax = plt.subplots(figsize=(8, 6))
         for name, model in models.items():
             y_proba = model.predict_proba(X_test)[:, 1]
@@ -155,7 +193,7 @@ def page_evaluation(models, X_test, y_test):
         st.pyplot(fig)
 
     with tab3:
-        st.subheader("Feature Importance")
+        st.markdown("<h2 style='text-align: center;'>Feature Importance</h2>", unsafe_allow_html=True)
         fig, axs = plt.subplots(1, 2, figsize=(18, 6))
         for ax, name in zip(axs, ["Random Forest", "XGBoost"]):
             model = models[name]
