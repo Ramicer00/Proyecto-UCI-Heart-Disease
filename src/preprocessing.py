@@ -4,15 +4,15 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 import os
 
-# ── CONSTANTES ────────────────────────────────────────────────────────────────
+# ── CONSTANTS ────────────────────────────────────────────────────────────────
 NUMERIC_COLS = ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
 CATEGORICAL_COLS = ['cp', 'restecg', 'slope', 'ca', 'thal']
 IMPUTE_MODA_COLS = ['restecg', 'thalach', 'exang', 'fbs', 'oldpeak', 'slope', 'thal', 'ca']
 
 
-# ── FUNCIONES ─────────────────────────────────────────────────────────────────
+# ── FUNCTIONS ─────────────────────────────────────────────────────────────────
 def fix_impossible_zeros(df):
-    """Reemplaza ceros médicamente imposibles por NaN en chol y trestbps."""
+    """Replaces medically impossible zeros with NaN in chol and trestbps."""
     df = df.copy()
     df['chol'] = df['chol'].replace(0, np.nan)
     df['trestbps'] = df['trestbps'].replace(0, np.nan)
@@ -20,7 +20,7 @@ def fix_impossible_zeros(df):
 
 
 def impute_nulls(df):
-    """Imputa nulos con media en variables continuas y moda en categóricas."""
+    """Imputes null values with mean for continuous variables and mode for categorical variables."""
     df = df.copy()
     df['chol'] = df['chol'].fillna(df['chol'].mean())
     df['trestbps'] = df['trestbps'].fillna(df['trestbps'].mean())
@@ -30,14 +30,14 @@ def impute_nulls(df):
 
 
 def fix_outliers(df):
-    """Corrige outliers clínicamente imposibles."""
+    """Fixes clinically impossible outliers."""
     df = df.copy()
     df['oldpeak'] = df['oldpeak'].clip(lower=0)
     return df
 
 
 def encode_categoricals(df):
-    """Aplica One-Hot Encoding a variables categóricas nominales."""
+    """Applies One-Hot Encoding to nominal categorical variables."""
     df = df.copy()
     df = pd.get_dummies(df, columns=CATEGORICAL_COLS, drop_first=True, dtype=int)
     return df
@@ -45,9 +45,9 @@ def encode_categoricals(df):
 
 def scale_numerics(df, scaler=None, save_path=None):
     """
-    Escala variables numéricas con StandardScaler.
-    - Si scaler=None → entrena un scaler nuevo (fit_transform) y lo guarda en save_path
-    - Si scaler!=None → usa el scaler existente (transform)
+    Scales numeric variables with StandardScaler.
+    - If scaler=None → trains a new scaler (fit_transform) and saves it in save_path
+    - If scaler!=None → uses the existing scaler (transform)
     """
     df = df.copy()
     if scaler is None:
@@ -63,9 +63,9 @@ def scale_numerics(df, scaler=None, save_path=None):
 
 def preprocess_data(df, scaler=None, scaler_path="./models/scaler.pkl"):
     """
-    Función principal que ejecuta todo el pipeline de preprocessing.
-    - scaler=None → entrena y guarda el scaler (usado en train_model.py)
-    - scaler!=None → usa el scaler existente (usado en streamlit_app.py)
+    Main function that executes the entire preprocessing pipeline.
+    - scaler=None → trains and saves the scaler (used in train_model.py)
+    - scaler!=None → uses the existing scaler (used in streamlit_app.py)
     """
     df = fix_impossible_zeros(df)
     df = impute_nulls(df)
@@ -75,10 +75,10 @@ def preprocess_data(df, scaler=None, scaler_path="./models/scaler.pkl"):
     return df, scaler
 
 
-# ── EJECUCIÓN DIRECTA ─────────────────────────────────────────────────────────
+# ── MAIN EXECUTION ─────────────────────────────────────────────────────────
 if __name__ == "__main__":
     df = pd.read_csv("./dataset/heart.csv")
     df_processed, scaler = preprocess_data(df)
     df_processed.to_csv("./dataset/heart_processed.csv", index=False)
-    print(f"Dataset procesado: {df_processed.shape[0]} filas × {df_processed.shape[1]} columnas")
-    print(f"Scaler guardado en ./models/scaler.pkl")
+    print(f"Dataset processed: {df_processed.shape[0]} rows × {df_processed.shape[1]} columns")
+    print(f"Scaler saved to ./models/scaler.pkl")

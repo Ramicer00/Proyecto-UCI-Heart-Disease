@@ -12,11 +12,11 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
-# ── CONSTANTES ────────────────────────────────────────────────────────────────
+# ── CONSTANTS ────────────────────────────────────────────────────────────────
 MODELS_DIR = "./models"
 DATA_DIR = "./dataset"
 
-# ── CARGA DE RECURSOS ─────────────────────────────────────────────────────────
+# ── LOAD RESOURCES ─────────────────────────────────────────────────────────
 @st.cache_resource
 def load_models():
     return {
@@ -31,11 +31,11 @@ def load_test_data():
     y_test = pd.read_csv(f"{DATA_DIR}/y_test.csv").squeeze()
     return X_test, y_test
 
-# ── PREPROCESSING DEL INPUT ───────────────────────────────────────────────────
+# ── INPUT PREPROCESSING ───────────────────────────────────────────────────
 def preprocess_input(input_dict, X_test_columns):
     """
-    Convierte el input del formulario al mismo formato que el modelo espera.
-    Aplica One-Hot Encoding y reordena columnas según X_test.
+    Converts form input to the format expected by the model.
+    Applies One-Hot Encoding and reorders columns to match training data.
     """
     scaler = joblib.load(f"{MODELS_DIR}/scaler.pkl")
     df = pd.DataFrame([input_dict])
@@ -44,21 +44,21 @@ def preprocess_input(input_dict, X_test_columns):
     cat_cols = ['cp', 'restecg', 'slope', 'ca', 'thal']
     df = pd.get_dummies(df, columns=cat_cols, drop_first=True, dtype=int)
 
-    # Agregar columnas faltantes con 0
+    # Add missing columns with zeros
     for col in X_test_columns:
         if col not in df.columns:
             df[col] = 0
 
     df = df[X_test_columns]
 
-    # Escalar variables numéricas
+    # Scale numeric variables
     numeric_cols = ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
     df[numeric_cols] = scaler.transform(df[numeric_cols])
 
     return df
 
 
-# ── PÁGINAS ───────────────────────────────────────────────────────────────────
+# ── PAGES ───────────────────────────────────────────────────────────────
 def page_prediction(models, X_test):
     st.markdown("<h1 style='text-align: center;'>Heart Disease Prediction</h1>", unsafe_allow_html=True)
     st.write("")
@@ -139,7 +139,7 @@ def page_evaluation(models, X_test, y_test):
         plt.tight_layout()
         st.pyplot(fig)
 
-# ── RESULTS SUMMARY ────────────────────────────────────────────────────────
+        # ── RESULTS SUMMARY ────────────────────────────────────────────────────────
         st.write("")
         st.markdown("### Results Summary")
 
@@ -156,6 +156,7 @@ def page_evaluation(models, X_test, y_test):
                 st.markdown(f"✅ **{tp}** sick patients correctly identified")
                 st.markdown(f"⚠️ **{fp}** healthy patients incorrectly flagged as sick")
                 st.markdown(f"🔴 **{fn}** sick patients missed (false negatives)")
+        # ── MODEL METRICS ────────────────────────────────────────────────────────
         st.write("")
         st.markdown("### Model Metrics")
 
@@ -209,7 +210,7 @@ def page_evaluation(models, X_test, y_test):
         st.pyplot(fig, use_container_width=True)
 
 
-# ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
+# ── NAVIGATION ────────────────────────────────────────────────────────────────
 def main():
     st.set_page_config(
         page_title="Heart Disease Predictor",
